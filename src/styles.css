@@ -1,3 +1,8 @@
+:root {
+  --color-top: #c11aef;
+  --color-bottom: #71e610;
+}
+
 html,
 body {
   overflow: hidden;
@@ -7,5 +12,5 @@ body {
 }
 
 body {
-  background: #000;
+  background: linear-gradient(to bottom, var(--color-top) 0%, var(--color-bottom) 100%);
 }

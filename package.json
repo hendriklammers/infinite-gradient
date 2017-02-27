@@ -1,0 +1,27 @@
+{
+  "name": "css-variables",
+  "version": "0.1.0",
+  "description": "Playing with css variables",
+  "main": "src/index.js",
+  "scripts": {
+    "build": "yarn && npm run lint && webpack",
+    "lint": "eslint src --ext .js",
+    "start": "npm run watch",
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "watch": "webpack-dev-server"
+  },
+  "author": "Hendrik Lammers (www.hendriklammers.com)",
+  "license": "MIT",
+  "devDependencies": {
+    "babel-core": "^6.23.1",
+    "babel-loader": "^6.3.2",
+    "babel-polyfill": "^6.23.0",
+    "babel-preset-es2015": "^6.22.0",
+    "babel-preset-stage-0": "^6.22.0",
+    "css-loader": "^0.26.2",
+    "eslint": "^3.16.1",
+    "style-loader": "^0.13.2",
+    "webpack": "^2.2.1",
+    "webpack-dev-server": "^2.4.1"
+  }
+}

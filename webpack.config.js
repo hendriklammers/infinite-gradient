@@ -1,4 +1,4 @@
-var path = require('path')
+const path = require('path')
 
 module.exports = {
   context: path.resolve(__dirname, 'src'),
@@ -22,7 +22,7 @@ module.exports = {
         use: [{
           loader: 'babel-loader',
           options: {
-            presets: ['es2015', 'stage-0']
+            presets: [['es2015', {modules: false}], 'stage-0']
           }
         }]
       },

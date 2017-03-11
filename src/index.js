@@ -2,19 +2,6 @@ import './styles.css'
 import {fromEvent} from 'most'
 import randomColor from 'randomcolor'
 
-// const colors = ['red', 'blue', 'yellow', 'green', 'purple', 'black']
-
-// let amountY = 0
-//
-// const randomColor = () => '#' + ((1<<24) * Math.random() | 0).toString(16)
-//
-// const handleScroll = event => {
-//   event.preventDefault()
-//   amountY += event.deltaY
-// }
-//
-// document.addEventListener('wheel', handleScroll)
-
 const styles = document.documentElement.style
 const add = (a, b) => a + b
 const lerp = (n, min, max) => (max - min) * n + min

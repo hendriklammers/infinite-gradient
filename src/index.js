@@ -1,29 +1,37 @@
 import './styles.css'
 import {fromEvent} from 'most'
-import {compose} from 'ramda'
+import {compose, curry, map} from 'ramda'
 import randomColor from 'randomcolor'
 
 const styles = document.documentElement.style
 const tweenDuration = 2000
 
-const clamp = (val, min, max) => Math.min(Math.max(val, min), max)
+const clamp = curry((min, max, n) => Math.min(Math.max(n, min), max))
+const clampRgb = clamp(0, 255)
+
 const lerp = (n, min, max) => (max - min) * n + min
 const normalize = (n, min, max) => (n - min) / (max - min)
-const rgbToArr = str =>
-  str.replace(/[^\d,]/g, '').split(',').map(n => parseInt(n))
+const rgbToArr = str => str.replace(/[^\d,]/g, '').split(',')
 const arrToRgb = arr => `rgb(${arr[0]},${arr[1]},${arr[2]})`
-const newColor = compose(rgbToArr, randomColor.bind(null, {format: 'rgb'}))
+
+// Uses randomColor library to create a new rgb color array
+const newColor = compose(
+  map(parseInt),
+  rgbToArr,
+  randomColor.bind(null, {format: 'rgb'})
+)
+
+// Calculates interpolated color from two rgb arrays
+const tweenColor = (c1, c2, val) => c1.map((c, i) =>
+  clampRgb(Math.round(lerp(normalize(val, 0, tweenDuration), c, c2[i]))))
 
 // Stream of mousewheel scroll events
 const scroll$ = fromEvent('wheel', document)
 
 // Stream of touchmove events, wheel event not available on touch devices
 
-// Calculates interpolated color from two rgb arrays
-const tweenColor = (c1, c2, val) => c1.map((c, i) =>
-  clamp(Math.round(lerp(normalize(val, 0, tweenDuration), c, c2[i])), 0, 255))
-
-scroll$.map(event => event.deltaY)
+scroll$
+  .map(event => event.deltaY)
   .scan((acc, val) => {
     const prev = Math.floor(acc.total / tweenDuration)
     const current = Math.floor((acc.total + val) / tweenDuration)

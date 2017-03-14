@@ -53,6 +53,7 @@ scroll$
     total: 0
   })
   .observe(data => {
+    // FIXME: Something goes wrong when total is negative
     console.log('total', data.total)
 
     const amount = data.total % TWEEN_DISTANCE

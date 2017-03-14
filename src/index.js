@@ -1,32 +1,25 @@
 import './styles.css'
 import {fromEvent} from 'most'
-import {compose, curry, map} from 'ramda'
+import {compose, map} from 'ramda'
 import randomColor from 'randomcolor'
+import {
+  arrayToRgb,
+  clamp,
+  lerp,
+  normalize,
+  rgbToArray
+} from './utils'
 
 const styles = document.documentElement.style
 const TWEEN_DISTANCE = 2000
 
-// Default curried clamp function
-const clamp = curry((min, max, n) => Math.min(Math.max(n, min), max))
 const clampRgb = clamp(0, 255)
-
-// Default curried normalize function
-const normalize = curry((min, max, n) => (n - min) / (max - min))
 const normalizeTween = normalize(0, TWEEN_DISTANCE)
-
-// Default curried linear interpolation function
-const lerp = curry((min, max, n) => (max - min) * n + min)
-
-// RGB string to array: rgb(255,255,255) -> [255,255,255]
-const rgbToArr = str => str.replace(/[^\d,]/g, '').split(',')
-
-// RGB array to string: [255,255,255] -> rgb(255,255,255)
-const arrToRgb = arr => `rgb(${arr[0]},${arr[1]},${arr[2]})`
 
 // Uses randomColor library to create a new rgb color array
 const newColor = compose(
   map(parseInt),
-  rgbToArr,
+  rgbToArray,
   randomColor.bind(null, {format: 'rgb'})
 )
 
@@ -34,7 +27,6 @@ const newColor = compose(
 const tweenColors = (c1, c2, val) => c1.map((c, i) =>
   compose(clampRgb, Math.round, lerp(c, c2[i]), normalizeTween)(val)
 )
-  // clampRgb(Math.round(lerp(c, c2[i], normalize(0, TWEEN_DISTANCE, val)))))
 
 // Stream of mousewheel scroll events
 const scroll$ = fromEvent('wheel', document)
@@ -61,9 +53,13 @@ scroll$
     total: 0
   })
   .observe(data => {
-    // console.log('data', data)
-    // val = val % TWEEN_DISTANCE
-    const colorTop = arrToRgb(tweenColors(data.color1, data.color2, data.total % TWEEN_DISTANCE))
+    console.log('total', data.total)
+
+    const amount = data.total % TWEEN_DISTANCE
+    console.log('amount', amount)
+    const colorTop = arrayToRgb(tweenColors(data.color1, data.color2, amount))
+
+    console.log('colorTop', colorTop)
     styles.setProperty('--color-top', colorTop)
 
     // const colorBottom = arrToRgb(tweenColors(colors[2], colors[3], val))

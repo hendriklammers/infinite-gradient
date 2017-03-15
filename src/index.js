@@ -25,6 +25,15 @@ const tweenColors = (c1, c2, val) => c1.map((c, i) =>
 // Stream of mousewheel scroll events
 const scroll$ = fromEvent('wheel', document)
 
+// Start of with 4 random colors
+const initialColors = {
+  colorTop1: color(),
+  colorTop2: color(),
+  colorBottom1: color(),
+  colorBottom2: color(),
+  total: 0
+}
+
 // Stream of touchmove events, wheel event not available on touch devices
 
 scroll$
@@ -34,22 +43,18 @@ scroll$
     const current = Math.floor((acc.total + val) / TWEEN_DISTANCE)
     if (current > prev) {
       acc.colorTop1 = acc.colorTop2
-      acc.colorTop2 = acc.colorBottom1
+      acc.colorTop2 = acc.colorBottom2
       acc.colorBottom1 = acc.colorBottom2
       acc.colorBottom2 = color()
     } else if (current < prev) {
+      acc.colorBottom2 = acc.colorBottom1
+      acc.colorBottom1 = acc.colorTop1
       acc.colorTop2 = acc.colorTop1
       acc.colorTop1 = color()
     }
     acc.total = acc.total + val
     return acc
-  }, {
-    colorTop1: color(),
-    colorTop2: color(),
-    colorBottom1: color(),
-    colorBottom2: color(),
-    total: 0
-  })
+  }, initialColors)
   .observe(data => {
     // FIXME: Something goes wrong when total is negative
     console.log('total', data.total)

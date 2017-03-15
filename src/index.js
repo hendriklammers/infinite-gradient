@@ -34,23 +34,39 @@ const initialColors = {
   total: 0
 }
 
-// Stream of touchmove events, wheel event not available on touch devices
+// TODO: Stream of touchmove events, wheel event not available on touch devices
 
 scroll$
   .map(event => event.deltaY)
   .scan((acc, val) => {
     const prev = Math.floor(acc.total / TWEEN_DISTANCE)
+    console.log('prev', prev)
     const current = Math.floor((acc.total + val) / TWEEN_DISTANCE)
-    if (current > prev) {
-      acc.colorTop1 = acc.colorTop2
-      acc.colorTop2 = acc.colorBottom2
-      acc.colorBottom1 = acc.colorBottom2
-      acc.colorBottom2 = color()
-    } else if (current < prev) {
-      acc.colorBottom2 = acc.colorBottom1
-      acc.colorBottom1 = acc.colorTop1
-      acc.colorTop2 = acc.colorTop1
-      acc.colorTop1 = color()
+    console.log('current', current)
+    if (acc.total >= 0) {
+      if (current > prev) {
+        acc.colorTop1 = acc.colorTop2
+        acc.colorTop2 = acc.colorBottom2
+        acc.colorBottom1 = acc.colorBottom2
+        acc.colorBottom2 = color()
+      } else if (current < prev) {
+        acc.colorBottom2 = acc.colorBottom1
+        acc.colorBottom1 = acc.colorTop1
+        acc.colorTop2 = acc.colorTop1
+        acc.colorTop1 = color()
+      }
+    } else {
+      if (current < prev) {
+        acc.colorTop1 = acc.colorTop2
+        acc.colorTop2 = acc.colorBottom2
+        acc.colorBottom1 = acc.colorBottom2
+        acc.colorBottom2 = color()
+      } else if (current > prev) {
+        acc.colorBottom2 = acc.colorBottom1
+        acc.colorBottom1 = acc.colorTop1
+        acc.colorTop2 = acc.colorTop1
+        acc.colorTop1 = color()
+      }
     }
     acc.total = acc.total + val
     return acc
@@ -60,10 +76,10 @@ scroll$
     console.log('total', data.total)
 
     const amount = data.total % TWEEN_DISTANCE
-    console.log('amount', amount)
+    // console.log('amount', amount)
     const colorTop = arrayToRgb(tweenColors(data.colorTop1, data.colorTop2, amount))
 
-    console.log('colorTop', colorTop)
+    // console.log('colorTop', colorTop)
     styles.setProperty('--color-top', colorTop)
 
     const colorBottom = arrayToRgb(tweenColors(data.colorBottom1, data.colorBottom2, amount))

@@ -15,7 +15,7 @@ const TWEEN_DISTANCE = 2000
 const normalizeTween = normalize(0, TWEEN_DISTANCE)
 
 // Uses randomColor library to create a new rgb color array
-const newColor = compose(rgbToArray, randomColor.bind(null, {format: 'rgb'}))
+const color = compose(rgbToArray, randomColor.bind(null, {format: 'rgb'}))
 
 // Calculates interpolated color from two rgb arrays
 const tweenColors = (c1, c2, val) => c1.map((c, i) =>
@@ -33,17 +33,21 @@ scroll$
     const prev = Math.floor(acc.total / TWEEN_DISTANCE)
     const current = Math.floor((acc.total + val) / TWEEN_DISTANCE)
     if (current > prev) {
-      acc.color1 = acc.color2
-      acc.color2 = newColor()
+      acc.colorTop1 = acc.colorTop2
+      acc.colorTop2 = acc.colorBottom1
+      acc.colorBottom1 = acc.colorBottom2
+      acc.colorBottom2 = color()
     } else if (current < prev) {
-      acc.color2 = acc.color1
-      acc.color1 = newColor()
+      acc.colorTop2 = acc.colorTop1
+      acc.colorTop1 = color()
     }
     acc.total = acc.total + val
     return acc
   }, {
-    color1: newColor(),
-    color2: newColor(),
+    colorTop1: color(),
+    colorTop2: color(),
+    colorBottom1: color(),
+    colorBottom2: color(),
     total: 0
   })
   .observe(data => {
@@ -52,11 +56,11 @@ scroll$
 
     const amount = data.total % TWEEN_DISTANCE
     console.log('amount', amount)
-    const colorTop = arrayToRgb(tweenColors(data.color1, data.color2, amount))
+    const colorTop = arrayToRgb(tweenColors(data.colorTop1, data.colorTop2, amount))
 
     console.log('colorTop', colorTop)
     styles.setProperty('--color-top', colorTop)
 
-    // const colorBottom = arrToRgb(tweenColors(colors[2], colors[3], val))
-    // styles.setProperty('--color-bottom', colorBottom)
+    const colorBottom = arrayToRgb(tweenColors(data.colorBottom1, data.colorBottom2, amount))
+    styles.setProperty('--color-bottom', colorBottom)
   })

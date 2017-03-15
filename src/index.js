@@ -1,10 +1,9 @@
 import './styles.css'
 import {fromEvent} from 'most'
-import {compose, map} from 'ramda'
+import {compose} from 'ramda'
 import randomColor from 'randomcolor'
 import {
   arrayToRgb,
-  clamp,
   lerp,
   normalize,
   rgbToArray
@@ -13,19 +12,14 @@ import {
 const styles = document.documentElement.style
 const TWEEN_DISTANCE = 2000
 
-const clampRgb = clamp(0, 255)
 const normalizeTween = normalize(0, TWEEN_DISTANCE)
 
 // Uses randomColor library to create a new rgb color array
-const newColor = compose(
-  map(parseInt),
-  rgbToArray,
-  randomColor.bind(null, {format: 'rgb'})
-)
+const newColor = compose(rgbToArray, randomColor.bind(null, {format: 'rgb'}))
 
 // Calculates interpolated color from two rgb arrays
 const tweenColors = (c1, c2, val) => c1.map((c, i) =>
-  compose(clampRgb, Math.round, lerp(c, c2[i]), normalizeTween)(val)
+  compose(Math.round, lerp(c, c2[i]), normalizeTween)(val)
 )
 
 // Stream of mousewheel scroll events

@@ -40,16 +40,16 @@ scroll$
   .map(event => event.deltaY)
   .scan((acc, val) => {
     const prev = Math.floor(acc.total / TWEEN_DISTANCE)
-    console.log('prev', prev)
+    // console.log('prev', prev)
     const current = Math.floor((acc.total + val) / TWEEN_DISTANCE)
-    console.log('current', current)
+    // console.log('current', current)
     if (acc.total >= 0) {
       if (current > prev) {
         acc.colorTop1 = acc.colorTop2
         acc.colorTop2 = acc.colorBottom2
         acc.colorBottom1 = acc.colorBottom2
         acc.colorBottom2 = color()
-      } else if (current < prev) {
+      } else if (current < prev && prev !== 0) {
         acc.colorBottom2 = acc.colorBottom1
         acc.colorBottom1 = acc.colorTop1
         acc.colorTop2 = acc.colorTop1
@@ -61,7 +61,7 @@ scroll$
         acc.colorTop2 = acc.colorBottom2
         acc.colorBottom1 = acc.colorBottom2
         acc.colorBottom2 = color()
-      } else if (current > prev) {
+      } else if (current > prev && prev !== -1) {
         acc.colorBottom2 = acc.colorBottom1
         acc.colorBottom1 = acc.colorTop1
         acc.colorTop2 = acc.colorTop1
@@ -72,10 +72,9 @@ scroll$
     return acc
   }, initialColors)
   .observe(data => {
-    // FIXME: Something goes wrong when total is negative
-    console.log('total', data.total)
+    // console.log('total', data.total)
 
-    const amount = data.total % TWEEN_DISTANCE
+    const amount = Math.abs(data.total % TWEEN_DISTANCE)
     // console.log('amount', amount)
     const colorTop = arrayToRgb(tweenColors(data.colorTop1, data.colorTop2, amount))
 

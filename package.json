@@ -1,5 +1,5 @@
 {
-  "name": "never-ending-gradient",
+  "name": "infinite-gradient",
   "version": "0.1.0",
   "description": "Playing with css variables",
   "main": "src/index.js",

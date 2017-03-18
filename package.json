@@ -4,7 +4,7 @@
   "description": "Playing with css variables",
   "main": "src/index.js",
   "scripts": {
-    "build": "yarn && npm run lint && webpack",
+    "build": "npm run lint && npm run test && webpack -p",
     "lint": "eslint src --ext .js",
     "start": "webpack-dev-server",
     "test": "jest",

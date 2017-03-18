@@ -9,10 +9,11 @@ import {
   rgbToArray
 } from './utils'
 
+const tweenDistance = 3000
 const styles = document.documentElement.style
-const TWEEN_DISTANCE = 2000
 
-const normalizeTween = normalize(0, TWEEN_DISTANCE)
+// Partially applied normalize
+const normalizeTween = normalize(0, tweenDistance)
 
 // Uses randomColor library to create a new rgb color array
 const color = compose(rgbToArray, randomColor.bind(null, {format: 'rgb'}))
@@ -21,6 +22,7 @@ const color = compose(rgbToArray, randomColor.bind(null, {format: 'rgb'}))
 const tweenColors = (c1, c2, val) => c1.map((c, i) =>
   compose(Math.round, lerp(c, c2[i]), normalizeTween)(val)
 )
+const tweenToRgb = compose(arrayToRgb, tweenColors)
 
 // Stream of mousewheel scroll events
 const scroll$ = fromEvent('wheel', document)
@@ -31,7 +33,8 @@ const initialColors = {
   colorTop2: color(),
   colorBottom1: color(),
   colorBottom2: color(),
-  total: 0
+  total: 0,
+  amount: 0
 }
 
 // TODO: Stream of touchmove events, wheel event not available on touch devices
@@ -39,10 +42,8 @@ const initialColors = {
 scroll$
   .map(event => event.deltaY)
   .scan((acc, val) => {
-    const prev = Math.floor(acc.total / TWEEN_DISTANCE)
-    // console.log('prev', prev)
-    const current = Math.floor((acc.total + val) / TWEEN_DISTANCE)
-    // console.log('current', current)
+    const prev = Math.floor(acc.total / tweenDistance)
+    const current = Math.floor((acc.total + val) / tweenDistance)
     if (acc.total >= 0) {
       if (current > prev) {
         acc.colorTop1 = acc.colorTop2
@@ -69,18 +70,15 @@ scroll$
       }
     }
     acc.total = acc.total + val
+    acc.amount = Math.abs(acc.total % tweenDistance)
     return acc
   }, initialColors)
-  .observe(data => {
-    // console.log('total', data.total)
-
-    const amount = Math.abs(data.total % TWEEN_DISTANCE)
-    // console.log('amount', amount)
-    const colorTop = arrayToRgb(tweenColors(data.colorTop1, data.colorTop2, amount))
-
-    // console.log('colorTop', colorTop)
-    styles.setProperty('--color-top', colorTop)
-
-    const colorBottom = arrayToRgb(tweenColors(data.colorBottom1, data.colorBottom2, amount))
-    styles.setProperty('--color-bottom', colorBottom)
+  .map(data => ({
+    top: tweenToRgb(data.colorTop1, data.colorTop2, data.amount),
+    bottom: tweenToRgb(data.colorBottom1, data.colorBottom2, data.amount)
+  }))
+  .tap(data => console.log(data))
+  .observe(({top, bottom}) => {
+    styles.setProperty('--color-top', top)
+    styles.setProperty('--color-bottom', bottom)
   })

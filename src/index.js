@@ -16,7 +16,7 @@ const styles = document.documentElement.style
 const normalizeTween = normalize(0, tweenDistance)
 
 // Uses randomColor library to create a new rgb color array
-const color = compose(rgbToArray, randomColor.bind(null, {format: 'rgb'}))
+const newColor = compose(rgbToArray, randomColor.bind(null, {format: 'rgb'}))
 
 // Calculates interpolated color from two rgb arrays
 const tweenColors = (c1, c2, val) => c1.map((c, i) =>
@@ -29,46 +29,52 @@ const scroll$ = fromEvent('wheel', document)
 
 // Start of with 4 random colors
 const initialColors = {
-  colorTop1: color(),
-  colorTop2: color(),
-  colorBottom1: color(),
-  colorBottom2: color(),
+  colorTop1: newColor(),
+  colorTop2: newColor(),
+  colorBottom1: newColor(),
+  colorBottom2: newColor(),
   total: 0,
   amount: 0
 }
 
-// TODO: Stream of touchmove events, wheel event not available on touch devices
+// Sets new colors on accumulator when going forward
+const forward = acc => {
+  acc.colorTop1 = acc.colorTop2
+  acc.colorTop2 = acc.colorBottom2
+  acc.colorBottom1 = acc.colorBottom2
+  acc.colorBottom2 = newColor()
+  return acc
+}
+
+// Sets new colors on accumulator when going backward
+const backward = acc => {
+  acc.colorBottom2 = acc.colorBottom1
+  acc.colorBottom1 = acc.colorTop1
+  acc.colorTop2 = acc.colorTop1
+  acc.colorTop1 = newColor()
+  return acc
+}
 
 scroll$
   .map(event => event.deltaY)
   .scan((acc, val) => {
+    // TODO: Solve this in a more functional way
     const prev = Math.floor(acc.total / tweenDistance)
     const current = Math.floor((acc.total + val) / tweenDistance)
-    if (acc.total >= 0) {
-      if (current > prev) {
-        acc.colorTop1 = acc.colorTop2
-        acc.colorTop2 = acc.colorBottom2
-        acc.colorBottom1 = acc.colorBottom2
-        acc.colorBottom2 = color()
-      } else if (current < prev && prev !== 0) {
-        acc.colorBottom2 = acc.colorBottom1
-        acc.colorBottom1 = acc.colorTop1
-        acc.colorTop2 = acc.colorTop1
-        acc.colorTop1 = color()
-      }
-    } else {
-      if (current < prev) {
-        acc.colorTop1 = acc.colorTop2
-        acc.colorTop2 = acc.colorBottom2
-        acc.colorBottom1 = acc.colorBottom2
-        acc.colorBottom2 = color()
-      } else if (current > prev && prev !== -1) {
-        acc.colorBottom2 = acc.colorBottom1
-        acc.colorBottom1 = acc.colorTop1
-        acc.colorTop2 = acc.colorTop1
-        acc.colorTop1 = color()
-      }
+    const up = current > prev
+    const down = current < prev
+    const negative = acc.total < 0
+
+    if (!negative && up) {
+      acc = forward(acc)
+    } else if (!negative && down && prev !== 0) {
+      acc = backward(acc)
+    } else if (negative && down) {
+      acc = forward(acc)
+    } else if (negative && up && prev !== -1) {
+      acc = backward(acc)
     }
+
     acc.total = acc.total + val
     acc.amount = Math.abs(acc.total % tweenDistance)
     return acc
@@ -77,8 +83,8 @@ scroll$
     top: tweenToRgb(data.colorTop1, data.colorTop2, data.amount),
     bottom: tweenToRgb(data.colorBottom1, data.colorBottom2, data.amount)
   }))
-  .tap(data => console.log(data))
   .observe(({top, bottom}) => {
+    // Set colors on the CSS variables
     styles.setProperty('--color-top', top)
     styles.setProperty('--color-bottom', bottom)
   })
